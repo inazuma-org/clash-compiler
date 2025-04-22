@@ -75,6 +75,44 @@ let
           '';
         });
 
+      clash-cores = 
+        let orig = 
+          hfinal.callCabal2nix
+            "clash-cores"
+            ((builtins.fetchGit {
+              url = "https://github.com/clash-lang/clash-cores.git";
+              ref = "ethernet";
+              rev = "a209a4b9e9178c29e2be90ede661ac8b26de129e";
+            })) { inherit (hfinal) ghc-typelits-knownnat ghc-typelits-extra; };
+        in prev.haskell.lib.overrideCabal orig (old: {
+          configureFlags = [
+            "-f-doctests"
+            "-f-unit-tests"
+            "-fnix"
+            "-fclash-18"
+          ];          
+        });
+
+      clash-protocols-base = 
+        hprev.callCabal2nix
+          "clash-protocols-base"
+          ((builtins.fetchGit {
+            url = "https://github.com/harris-chris/clash-protocols.git";
+            ref = "main";
+            rev = "128c36848b4c5c700eb53c686d66f8a3b80d5304";
+          }) + "/clash-protocols-base") {};
+
+      clash-protocols = 
+        prev.haskell.lib.dontCheck (
+          hfinal.callCabal2nix
+            "clash-protocols"
+            ((builtins.fetchGit {
+              url = "https://github.com/harris-chris/clash-protocols.git";
+              ref = "main";
+              rev = "128c36848b4c5c700eb53c686d66f8a3b80d5304";
+            }) + "/clash-protocols") { }
+          );
+
       clash-cosim =
         let
           unmodified =
